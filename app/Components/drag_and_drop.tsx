@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { DragEvent, useState } from "react";
 import { FaFireAlt, FaTrash } from "react-icons/fa";
 import { motion } from "framer-motion";
 
@@ -42,28 +42,89 @@ export default function Drag_and_drop() {
   );
 }
 
-const Column = ({ title, column, cards, headingColor, setCards }: any) => {
+const Column = ({
+  title,
+  column,
+  cards,
+  headingColor,
+  setCards,
+}: {
+  cards: Array<any>;
+}) => {
   const [active, setActive] = useState(false);
   const CardType = cards.filter((c: any) => c.column == column);
+
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, id: any) => {
     console.log(id);
     e.dataTransfer.setData("cardId", id.toString());
   };
+
   const handleDragOver = (e: any) => {
     e.preventDefault();
+    hightlightIndicators(e);
     setActive(true);
+  };
+  const hightlightIndicators = (e: any) => {
+    const indicators = getIndicators();
+    ClearHighlight();
+    const el = getNearstIndecator(e, indicators);
+    if (el.element?.style) el.element.style.opacity = "1";
+    // ClearHighlight(el);
+  };
+
+  const getNearstIndecator = (e: DragEvent | any, indicators: Array<any>) => {
+    const el = indicators.reduce(
+      (closest, child) => {
+        const box = child.getBoundingClientRect();
+
+        const offset = e.clientY - (box.top + 50);
+
+        if (offset < 0 && offset > closest.offset) {
+          return { offset: offset, element: child };
+        } else {
+          return closest;
+        }
+      },
+      {
+        offset: Number.NEGATIVE_INFINITY,
+        element: indicators[indicators.length - 1],
+      }
+    );
+    return el;
+  };
+
+  const getIndicators = () => {
+    return Array.from(document?.querySelectorAll(`[data-column="${column}"]`));
+  };
+  const ClearHighlight = (el?: Array<any>) => {
+    const indicators = el || getIndicators();
+    indicators?.forEach((el: any) => (el.style.opacity = "0"));
+  };
+
+  const handleDrop = (e: DragEvent | any) => {
+    const id = e.dataTransfer?.getData("cardId");
+    setActive(false);
+    ClearHighlight();
+    const indicatores = getIndicators();
+    const { element } = getNearstIndecator(e, indicatores);
+    const before = element?.dataset?.before || "-1";
+    let copy = [...cards];
+    copy = copy.filter((c) => c.id !== id);
+    const beforIndex = copy.findIndex((c: any) => c.id === before);
+    const indexCard = cards.findIndex((c: any) => c.id === id);
+    const moveToBack = before === "-1";
+    if (moveToBack) {
+      copy.push({ ...cards[indexCard], column: column });
+    } else {
+      copy.splice(beforIndex, 0, { ...cards[indexCard], column: column });
+    }
+    setCards(copy);
   };
   const handleDragLeave = (e: any) => {
     setActive(false);
+    ClearHighlight();
   };
-  const handleDrop = (e: DragEvent | any) => {
-    const id = e.dataTransfer?.getData("cardId");
-    setCards?.((priv: any) => [
-      ...priv,
-      (cards.find((c: any) => c.id == id).column = column),
-    ]);
-    setActive(false);
-  };
+
   return (
     <div
       onDrop={handleDrop}
@@ -85,6 +146,7 @@ const Column = ({ title, column, cards, headingColor, setCards }: any) => {
               key={c.id}
               title={c.title}
               id={c.id}
+              column={column}
               handleDragStart={handleDragStart}
             />
           );
@@ -132,7 +194,7 @@ const BurnTrash = ({
 const Card = ({ title, id, column, handleDragStart }: any) => {
   return (
     <>
-      <CardIndecator />
+      <CardIndecator beforeid={id} column={column} />
       <motion.div
         layout
         layoutId={id}
@@ -142,12 +204,23 @@ const Card = ({ title, id, column, handleDragStart }: any) => {
       >
         <p>{title}</p>
       </motion.div>{" "}
-      <CardIndecator />
     </>
   );
 };
-const CardIndecator = () => {
-  return <div className="h-[2px] w-full rounded-full bg-violet-500 opacity-0"></div>;
+const CardIndecator = ({
+  beforeid,
+  column,
+}: {
+  beforeid: string;
+  column: string;
+}) => {
+  return (
+    <div
+      data-before={beforeid}
+      data-column={column}
+      className="h-[2px] w-full bg-violet-500/50 opacity-0"
+    ></div>
+  );
 };
 
 const DEFAULT_CARDS = [
