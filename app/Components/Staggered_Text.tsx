@@ -8,19 +8,26 @@ export default function Staggered_Text() {
       <motion.div
         className="overflow-hidden cursor-pointer relative"
         initial="initial"
-        whileHover="hovered"
-        style={{lineHeight:0.80}}
+        animate="hovered"
+        style={{ lineHeight: 0.8 }}
       >
         <div className="h-fit">
           {TEXT.split("").map((l: string, i: number) => {
             return (
               <motion.span
+                key={i}
                 variants={{
                   initial: { y: "0" },
                   hovered: { y: "-100%" },
                 }}
-                transition={{duration:0.25,delay:0.025*i,ease:"easeInOut"}}
-               
+                transition={{
+                  duration: 0.5,
+                  delay: 0.02 * i,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  repeatDelay: 1,
+                }}
                 className="inline-block"
               >
                 {l}
@@ -32,11 +39,19 @@ export default function Staggered_Text() {
           {TEXT.split("").map((l: string, i: number) => {
             return (
               <motion.span
+                key={i}
                 variants={{
                   initial: { y: "100%" },
                   hovered: { y: "0" },
                 }}
-                transition={{duration:0.25,delay:0.025*i,ease:"easeInOut"}}
+                transition={{
+                  duration: 0.5,
+                  delay: 0.02 * i,
+                  ease: "easeInOut",
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  repeatDelay: 1,
+                }}
                 className="inline-block"
               >
                 {l}
