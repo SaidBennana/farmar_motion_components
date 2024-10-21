@@ -1,5 +1,13 @@
 "use client";
-import { OrbitControls, Stars, Text } from "@react-three/drei";
+import {
+  Decal,
+  OrbitControls,
+  Progress,
+  Stars,
+  Text,
+  useProgress,
+  useTexture,
+} from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import {
   useMotionValue,
@@ -8,12 +16,15 @@ import {
   motion,
 } from "framer-motion";
 import { motion as motion3d } from "framer-motion-3d";
-import { useEffect } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { FaArrowRight } from "react-icons/fa";
 import SliderNavBar from "./SliderNavBar";
+import { Html } from "next/document";
 
 const COLORS = ["#13FFAA", "#CE84CF", "#DD335C"];
 export default function Aurora_Effect() {
+  // const texture = useTexture("/img/texture.png");
+  const [moneIsHover, setMoneHover] = useState(false);
   const color = useMotionValue(COLORS[0]);
   const backgroundImage = useMotionTemplate`radial-gradient(120% 120% at 50% 0%, black 50%, ${color})`;
   const shadowButton = useMotionTemplate`0px 0px 10px ${color}`;
@@ -31,8 +42,8 @@ export default function Aurora_Effect() {
       }}
       className="w-full h-[100vh] relative flex justify-center items-center flex-col"
     >
-      <SliderNavBar/>
-      <div className="flex justify-center flex-col items-center gap-6 z-10 select-none">
+      <SliderNavBar />
+      <div className="flex justify-center flex-col items-center gap-6 z-10 pointer-events-none">
         <span className="bg-violet-500 font-semibold py-1 text-sm  px-2 rounded-full">
           Expand Your Business!
         </span>
@@ -52,27 +63,60 @@ export default function Aurora_Effect() {
         </motion.button>
       </div>
       <div className="absolute inset-0">
-        <Canvas>
-          <Stars
-            radius={100}
-            depth={100}
-            count={5000}
-            saturation={0}
-            fade
-            speed={1}
-          />
+        <Suspense fallback={<Loader />}>
+          <Canvas>
+            <Progress />
 
-          <mesh position={[0, 0, 100]} scale={[10, 10, 10]}>
-            <OrbitControls enableZoom={false} />
-            <sphereGeometry />
-          </mesh>
-          <mesh position={[0, 15, 100]} scale={[-10, 10, 10]}>
-            <Text rotation={[0,0,0]} characters="abcdefghijklmnopqrstuvwxyz0123456789!" color="white" anchorX="center" anchorY="middle">
-              Hello world!
-            </Text>
-          </mesh>
-        </Canvas>
+            <Stars
+              radius={100}
+              depth={100}
+              count={5000}
+              saturation={0}
+              fade
+              speed={1}
+            />
+
+            <motion3d.mesh
+              variants={{
+                hover: { scale: 12 },
+                initial: { scale: 10 },
+              }}
+              initial="initial"
+              animate={moneIsHover ? "hover" : "initial"}
+              transition={{ type: "spring", stiffness: 120 }}
+              onPointerMove={() => {
+                setMoneHover(true);
+              }}
+              onPointerLeave={() => {
+                setMoneHover(false);
+              }}
+              position={[0, 0, 100]}
+            >
+              <OrbitControls enableZoom={false} />
+              <sphereGeometry />
+              <Decal position={[0, 0, 0]} rotation={[0, 0, 0]}>
+                <meshBasicMaterial />
+              </Decal>
+            </motion3d.mesh>
+            <mesh position={[0, 15, 100]} scale={[-10, 10, 10]}>
+              <Text
+                rotation={[0, 0, 0]}
+                characters="abcdefghijklmnopqrstuvwxyz0123456789!"
+                color="white"
+                anchorX="center"
+                anchorY="middle"
+              >
+                Farmer Motion
+              </Text>
+            </mesh>
+          </Canvas>
+        </Suspense>
       </div>
     </motion.div>
   );
+}
+
+function Loader() {
+  const { active, progress, errors, item, loaded, total } = useProgress();
+  return <div className="w-full h-full grid place-content-center">{progress} % loaded</div>;
 }
