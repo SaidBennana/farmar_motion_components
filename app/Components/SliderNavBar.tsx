@@ -35,9 +35,11 @@ const Tab = ({ name, setPosition }: { name: string; setPosition: any }) => {
       ref={ref}
       onMouseEnter={() => {
         if (!ref?.current) return;
+        // @ts-ignore
         const data = ref?.current?.getBoundingClientRect();
         setPosition((pri: any) => ({
-          left: ref?.current?.offsetLeft,
+          // @ts-ignore
+          left: ref?.current?.offsetLeft!,
           width: data.width,
           opacity: 1,
         }));
