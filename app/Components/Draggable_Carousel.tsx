@@ -76,14 +76,14 @@ export default function Draggable_Carousel() {
     } else if (dragX.get() >= 100 && imageIndax > 0) {
       setImageIndex((pri) => pri - 1);
     }
-    console.log(widthImage*imageIndax);
+    console.log(widthImage * imageIndax);
   };
 
   useEffect(() => {
     const imageCaru = document
       .getElementById("image_carousel")
       ?.getBoundingClientRect().width;
-    setWidthImage(imageCaru);
+    if (imageCaru) setWidthImage(imageCaru);
   }, []);
 
   return (
