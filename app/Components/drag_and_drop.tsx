@@ -49,7 +49,11 @@ const Column = ({
   headingColor,
   setCards,
 }: {
+  title: string;
+  headingColor:string;
   cards: Array<any>;
+  column: string;
+  setCards: any
 }) => {
   const [active, setActive] = useState(false);
   const CardType = cards.filter((c: any) => c.column == column);
